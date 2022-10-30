@@ -1,24 +1,31 @@
 import java.io.Console;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.concurrent.ForkJoinPool;
 
 public class Main {
     static int[][] array;
-    static int[] arrayOne;
+
+    static int n = 30000;
+
+    static int maxJ;
+
+    static HashMap<Integer, Integer> maxMap = new HashMap<Integer, Integer>(maxJ);
 
     public static void main(String[] args) throws Exception {
         Scanner in = new Scanner(System.in);
         System.out.println("input N");
-        int n = in.nextInt();
         generateMass(n, n);
-        generateMass(n);
         long start = System.currentTimeMillis();
         int max = oneThreadAlgorithm();
         long finish = System.currentTimeMillis();
         long elapsed = finish - start;
         System.out.println("Прошло времени, мс: " + elapsed + " максимум " + max);
-        int mass = ForkJoinPollAlgotitm();
-        System.out.println(mass);
+        long startForkJoin = System.currentTimeMillis();
+        int maxForkJoin = ForkJoinPollAlgotitm();
+        long endForkJoin = System.currentTimeMillis();
+        long elapsedForkJoin = endForkJoin - startForkJoin;
+        System.out.println("Прошло времени, мс: " + elapsedForkJoin + " максимум " + maxForkJoin);
     }
 
     public static void generateMass(int n, int m) {
@@ -27,13 +34,6 @@ public class Main {
             for (int j = 0; j < array[i].length; j++) {
                 array[i][j] = (int) (Math.random() * +1000);
             }
-        }
-    }
-
-    public static void generateMass(int m) {
-        arrayOne = new int[m];
-        for (int i = 0; i < arrayOne.length; i++) {
-            arrayOne[i] = (int) (Math.random() * +1000);
         }
     }
 
@@ -54,10 +54,9 @@ public class Main {
     }
 
     public static int ForkJoinPollAlgotitm() {
-        RecursiveTask recursiveTaskFindMax = new RecursiveTask(array);
+        RecursiveTask recursiveTaskFindMax = new RecursiveTask(array, 1, n - 2);
         ForkJoinPool forkJoinPool = new ForkJoinPool(4);
-        for (int i = 0; i < array.length; i++) {
-            forkJoinPool.invoke(recursiveTaskFindMax);
-        }
+        forkJoinPool.invoke(recursiveTaskFindMax);
+        return forkJoinPool.invoke(recursiveTaskFindMax);
     }
 }
